@@ -1,0 +1,74 @@
+<html>
+
+<head>
+  <title>Client</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <section id="identifer_code_provider" style="background-color:bisque ; padding: 15px; display: none">
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <label for="identifer_code">Please provide your identifer code: </label>
+                <input type="text" name="identifer_code" id="identifer_code"/>
+                <button type="button">Submit</button>
+            </div>
+        </div>
+    </section>
+    <section id="details" style="background-color: azure; padding: 15px;display: none;">
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <label for="identifer_code">Your identifer code: </label>
+                <input type="text" name="identifer_code" id="identifer_code" readonly/>
+            </div>
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <label for="socket_id">Your socket id: </label>
+                <input type="text" name="socket_id" id="socket_id" readonly/>
+            </div>
+        </div>
+    </section>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+      $(function(){
+          var identiferCodeProviderSection = $("#identifer_code_provider");
+          var detailSection = $("#details");
+
+          var socket = io("/client");
+          socket.on("registration",function(){
+            identiferCodeProviderSection.show();
+            detailSection.hide();
+          });
+
+          socket.on("shutdown",function(msg){
+              alert("admin: " + msg);
+          })
+
+          identiferCodeProviderSection.find("button").on("click",function(){
+              var identifer_code = identiferCodeProviderSection.find("#identifer_code").first().val();
+              console.log("identifer_code: " + identifer_code);
+              if(!identifer_code){
+                  return;
+              }
+              socket.emit("registration",identifer_code,function(pass){
+                if(pass){
+                    identiferCodeProviderSection.hide();
+                    var socketId       = socket.id;
+                    var identifierCode = socket.identifer_code;
+                    detailSection.find("input[name=socket_id]").first().val(socketId);
+                    detailSection.find("input[name=identifer_code]").first().val(identifer_code);
+                    detailSection.show();
+                }
+              });
+          })
+
+      })
+  </script>
+</body>
+
+</html>

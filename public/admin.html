@@ -1,0 +1,62 @@
+<html>
+
+<head>
+  <title>Admin</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <section id="available_identifier_code">
+        <div class="card" style="width: 30rem;">
+            <div class="card-header">
+              Available identifier code
+            </div>
+            <ul class="list-group list-group-flush">
+              
+            </ul>
+          </div>
+    </section>
+  </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+      $(function(){
+          var socket = io("/admin");
+          socket.emit("available client");
+          socket.on("update available client",function(){
+            socket.emit("available client");
+          });
+          var availableIdentifierCodeSection = $("#available_identifier_code");
+          var clientItems = availableIdentifierCodeSection.find("ul.list-group");
+          socket.on("available client",function(clients){
+            clientItems.empty();
+            for(var i = 0;i< clients.length;i++){
+              console.log("client id: " + clients[i].id)
+              console.log("client identifier code: " + clients[i].identifier_code)
+              
+              var list_group_item = $("<li class=\"list-group-item\"></li>")
+              var ic = $("<div id=\"ic\" style=\"height: 21px;float: left; line-height: 21px;\"></div>")
+              var shutdownBtn = $("<button type=\"button\" id=\"shutdown_button\">Shut it down</button>")
+              var noOfClient = $("<div style=\"height: 21px;float: right; line-height: 21px;margin-right: 5px;\">100 client</div>")
+              ic.text(clients[i].identifier_code)
+              noOfClient.text(clients[i].number_of_clients)
+              ic.appendTo(list_group_item);
+              shutdownBtn.appendTo(list_group_item);
+              noOfClient.appendTo(list_group_item);
+              clientItems.append(list_group_item);
+            }
+          });
+          $(document).on("click","#available_identifier_code .list-group-item button",function(){
+            var identifier_code = $(this).parent().find("#ic").first().text();
+            socket.emit("shutdown",identifier_code);
+          })
+      })
+  </script>
+</body>
+
+</html>
